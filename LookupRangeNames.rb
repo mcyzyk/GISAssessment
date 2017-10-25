@@ -88,15 +88,15 @@ dsEisenhowerALevelAtlases = dsAllRecords.where(theQueryString)
 xlsx.each_row_streaming do |callnumberCurrent|
 
 	# At this point, callnumberCurrent is an Excel row.  Must get at individual value and create its Lcsort sortkey
-	callnumberCurrentSortKey = callnumberCurrent[0].to_s
+	callnumberCurrentSortKey = callnumberCurrent[0].to_s.strip
 	callnumberCurrentSortKey = Lcsort.normalize(callnumberCurrentSortKey)
 
-	puts callnumberCurrent[0].to_s
+	puts callnumberCurrent[0].to_s.strip
 
 	# Next if sortkey is nil
 	if (callnumberCurrentSortKey == nil)
 		# Insert into results table
-		results.insert(:CallNumber => callnumberCurrent[0].to_s, :RangeName => "RANGENAME NOT FOUND")
+		results.insert(:CallNumber => callnumberCurrent[0].to_s.strip, :RangeName => "RANGENAME NOT FOUND")
 		puts
 		next
 	end
@@ -117,7 +117,7 @@ xlsx.each_row_streaming do |callnumberCurrent|
         end
 
 	# Winnow the current dataset to JUST the rows beginning with the first letter of the current call number
-	firstLetter = callnumberCurrent[0].to_s.chr
+	firstLetter = callnumberCurrent[0].to_s.strip.chr
 	dsCurrent = dsCurrent.where(Sequel.like(:BeginCallNumber, "#{firstLetter}%")).or(Sequel.like(:EndCallNumber, "#{firstLetter}%"))
 
 	# Loop over lookup dataset
@@ -137,7 +137,7 @@ xlsx.each_row_streaming do |callnumberCurrent|
 			if (callnumberCurrentSortKey == beginCallNumberSortKey || callnumberCurrentSortKey == endCallNumberSortKey || callnumberCurrentSortKey == callnumberArraySorted[1].to_s) 
 				# We've found our RangeName!
 				# Insert into results table
-				results.insert(:CallNumber => callnumberCurrent[0].to_s, :RangeName => row[:RangeName].to_s)
+				results.insert(:CallNumber => callnumberCurrent[0].to_s.strip, :RangeName => row[:RangeName].to_s)
 				puts row[:RangeName].to_s
 				puts
 				break
