@@ -45,6 +45,8 @@ end
 DBLookupAndResults.create_table :results do
         string :CallNumber
         string :RangeName
+        string :NumberOfCheckouts
+        string :ItemNumber
 end
 
 results = DBLookupAndResults[:results]
@@ -96,7 +98,7 @@ xlsx.each_row_streaming do |callnumberCurrent|
 	# Next if sortkey is nil
 	if (callnumberCurrentSortKey == nil)
 		# Insert into results table
-		results.insert(:CallNumber => callnumberCurrent[0].to_s.strip, :RangeName => "RANGENAME NOT FOUND")
+		results.insert(:CallNumber => callnumberCurrent[0].to_s.strip, :RangeName => "RANGENAME NOT FOUND", :NumberOfCheckouts => callnumberCurrent[1].to_s.strip, :ItemNumber => callnumberCurrent[2].to_s.strip)
 		puts
 		next
 	end
@@ -137,7 +139,7 @@ xlsx.each_row_streaming do |callnumberCurrent|
 			if (callnumberCurrentSortKey == beginCallNumberSortKey || callnumberCurrentSortKey == endCallNumberSortKey || callnumberCurrentSortKey == callnumberArraySorted[1].to_s) 
 				# We've found our RangeName!
 				# Insert into results table
-				results.insert(:CallNumber => callnumberCurrent[0].to_s.strip, :RangeName => row[:RangeName].to_s)
+				results.insert(:CallNumber => callnumberCurrent[0].to_s.strip, :RangeName => row[:RangeName].to_s, :NumberOfCheckouts => callnumberCurrent[1].to_s.strip, :ItemNumber => callnumberCurrent[2].to_s.strip)
 				puts row[:RangeName].to_s
 				puts
 				break
