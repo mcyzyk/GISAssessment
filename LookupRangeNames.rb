@@ -3,11 +3,11 @@
 #
 # This script looks up Range Name per Call Number
 #
-# It takes as its input a spreadsheet consisting of a single column 
+# It takes as its input a spreadsheet consisting of a single column
 # of call numbers, no header. This spreadsheet must be named "input.xlsx"
 # and must be placed in the same directory with this script.
 #
-# It results in a CSV file, output.csv, consisting of two columns: 
+# It results in a CSV file, output.csv, consisting of two columns:
 # One holding CallNumbers; the second holding associated RangeNames.
 # No column headers.
 
@@ -33,6 +33,14 @@ DBLookupAndResults.create_table :lookup do
 	string :CollectionCode
 end
 
+# Create results table in database
+DBLookupAndResults.create_table :results do
+        string :CallNumber
+        string :RangeName
+        string :NumberOfCheckouts
+        string :ItemNumber
+end
+
 
 lookup = DBLookupAndResults[:lookup]
 
@@ -41,13 +49,6 @@ xlsxLookup.each_row_streaming do |row|
 	lookup.insert(:RangeName => row[0].to_s, :BeginCallNumber => row[1].to_s, :EndCallNumber => row[2].to_s, :CollectionCode => row[3].to_s)
 end
 
-# Create results table in database
-DBLookupAndResults.create_table :results do
-        string :CallNumber
-        string :RangeName
-        string :NumberOfCheckouts
-        string :ItemNumber
-end
 
 results = DBLookupAndResults[:results]
 
@@ -61,7 +62,7 @@ results = DBLookupAndResults[:results]
 dsAllRecords = DBLookupAndResults[:lookup]
 dsAllRecords = dsAllRecords.order(:BeginCallNumber)
 
-# Create dataset of Eisenhower General Collection that are NOT Quarto or Folio 
+# Create dataset of Eisenhower General Collection that are NOT Quarto or Folio
 theQueryString = Sequel.lit('BeginCallNumber NOT LIKE "%QUARTO" AND BeginCallNumber NOT LIKE "%FOLIO" AND CollectionCode = "Eisenhower General Collection"')
 dsEisenhowerGeneralCollection = dsAllRecords.where(theQueryString)
 
@@ -103,7 +104,7 @@ xlsx.each_row_streaming do |callnumberCurrent|
 		next
 	end
 
-	# Set current dataset pointer 
+	# Set current dataset pointer
         if callnumberCurrent[0].to_s.include? "QUARTO"
                 dsCurrent = dsQuarto
         elsif callnumberCurrent[0].to_s.include? "FOLIO"
@@ -136,7 +137,7 @@ xlsx.each_row_streaming do |callnumberCurrent|
 			callnumberArray = [beginCallNumberSortKey, callnumberCurrentSortKey, endCallNumberSortKey]
 			callnumberArraySorted = callnumberArray.sort
 
-			if (callnumberCurrentSortKey == beginCallNumberSortKey || callnumberCurrentSortKey == endCallNumberSortKey || callnumberCurrentSortKey == callnumberArraySorted[1].to_s) 
+			if (callnumberCurrentSortKey == beginCallNumberSortKey || callnumberCurrentSortKey == endCallNumberSortKey || callnumberCurrentSortKey == callnumberArraySorted[1].to_s)
 				# We've found our RangeName!
 				# Insert into results table
 				results.insert(:CallNumber => callnumberCurrent[0].to_s.strip, :RangeName => row[:RangeName].to_s, :NumberOfCheckouts => callnumberCurrent[1].to_s.strip, :ItemNumber => callnumberCurrent[2].to_s.strip)
@@ -144,7 +145,7 @@ xlsx.each_row_streaming do |callnumberCurrent|
 				puts
 				break
 			end
-		end	
+		end
 	end
 end
 
@@ -154,4 +155,3 @@ CSV.open("output.csv", "wb") do |csv|
 		csv << row.values.to_a
 	end
 end
-
